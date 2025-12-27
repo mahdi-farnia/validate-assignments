@@ -1,0 +1,16 @@
+services:
+  app:
+    image: validate-assignments
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: validate-assignments
+    environment:
+      - ASSETS_DIR=${ASSETS_DIR:-/assets}
+      - APP_NAME=${APP_NAME:-validate-assignments}
+      - SOLUTION_JSON=${SOLUTION_JSON:-/assets/solution.json}
+      - RUN_TIMEOUT_SEC=${RUN_TIMEOUT_SEC:-5}
+    volumes:
+      - ./assets:/assets
+    network_mode: none
+
