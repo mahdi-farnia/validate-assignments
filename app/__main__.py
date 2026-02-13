@@ -1,20 +1,24 @@
 """Main entry for program"""
 
+import logging
 import sys
 
 from app.comp_source import SourceCompileError, comp_source
-from app.gen_report import ReportItem, ValidationStatus, write_report_md
 from app.list_sources import list_sources
 from app.parse_solution import UnsupportedSolutionFormat, parse_solution
-from app.run_bin import NotSuccessfulExit, run_bin
+from app.report import (
+    ReportFormat,
+    ReportItem,
+    ReportWriter,
+    ValidationStatus,
+)
+from app.run_bin import CalledProcessError, run_bin
 from app.solution_file.reader import read_solution
-
-import logging
 
 logger = logging.getLogger(__name__)
 
 
-async def main():
+async def main(report_formats: list[ReportFormat]):
     async with read_solution() as solution_src:
         try:
             solution = await parse_solution(solution_src)
@@ -48,18 +52,19 @@ async def main():
                 )
                 logger.warning(f"[{idx:2}]  Invalid Output => {student_id}")
                 report_record.append((student_id, ValidationStatus.INVALID_OUTPUT))
-        except NotSuccessfulExit:
+        except CalledProcessError:
             logger.warning(f"[{idx:2}]  Failed To Run => {student_id}")
-            report_record.append((student_id, ValidationStatus.COMPILATION_FAILED))
+            report_record.append((student_id, ValidationStatus.RUN_FAILED))
 
-    logger.info("Generating Report.md...")
+    logger.info("Generating Report...")
 
-    await write_report_md(report_record)
+    await ReportWriter(report_formats, report_record).write_report()
 
 
 if __name__ == "__main__":
     import asyncio
     import os
+    from argparse import ArgumentParser
 
     logging.basicConfig(
         level=(
@@ -68,4 +73,30 @@ if __name__ == "__main__":
             else logging.INFO
         )
     )
-    asyncio.run(main())
+
+    parser = ArgumentParser()
+    parser.add_argument(
+        "-no-md",
+        action="store_true",
+        default=False,
+        help="report in markdown format",
+    )
+    parser.add_argument(
+        "-no-json",
+        action="store_true",
+        default=False,
+        help="report in json format",
+    )
+    args = parser.parse_args()
+
+    formats = [ReportFormat.JSON, ReportFormat.MD]
+    if args.no_md:
+        formats.remove(ReportFormat.MD)
+    if args.no_json:
+        formats.remove(ReportFormat.JSON)
+
+    if len(formats) == 0:
+        print("no such report format selected", file=sys.stderr)
+        sys.exit()
+
+    asyncio.run(main(formats))

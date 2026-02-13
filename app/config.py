@@ -17,7 +17,7 @@ class Settings:
         _APP_NAME = getenv("APP_NAME")
         assert _APP_NAME, "APP_NAME env not defined"
         result = Path(tempfile.gettempdir()) / _APP_NAME
-        makedirs(result)
+        makedirs(result, exist_ok=True)
         return result
 
     @cached_property
@@ -32,6 +32,7 @@ class Settings:
         return int(_RUN_TIMEOUT_SEC)
 
     report_md: str = "Report.md"
+    report_json: str = "Report.json"
 
 
 class MockedSettings:
@@ -40,6 +41,7 @@ class MockedSettings:
     solution_json: str = "sample.json"
     run_timeout_sec: int = 5
     report_md: str = "Report.md"
+    report_json: str = "Report.json"
 
 
 settings = Settings() if not "pytest" in sys.modules else MockedSettings()

@@ -1,4 +1,4 @@
-import subprocess
+from subprocess import run as run_subprocess, CalledProcessError
 from datetime import timedelta
 from pathlib import Path
 
@@ -23,7 +23,7 @@ def run_bin(
     :return: Stdout Lines
     :rtype: list[str]
     """
-    result = subprocess.run(
+    result = run_subprocess(
         [dest.as_posix()],
         input="\n".join(stdin_lines),
         text=True,
@@ -32,11 +32,4 @@ def run_bin(
         timeout=timeout.seconds,
     )
 
-    if result.returncode != 0:
-        raise NotSuccessfulExit()
-
     return result.stdout.splitlines()
-
-
-class NotSuccessfulExit(Exception):
-    """Any exists other than 0"""

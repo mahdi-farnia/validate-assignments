@@ -1,11 +1,15 @@
+# OS Specific
 .DS_Store
+# WSL Artifacts
+*:Zone-Identifier
+
 .venv
 venv
 __pycache__
 .pytest_cache
+
+# Project Artifacts
 .env
 assets/*
 !.gitkeep
-
-# Generated Artifact
-Report.md
+.vscode
