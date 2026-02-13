@@ -1,6 +1,7 @@
 # Assignment Validation
 
 - [x] Basic assignment check based on input & outputs.
+- [x] Report In Different Formats Like MD & JSON.
 - [ ] Also option for duplicate code based on comparing checksum (calculated using sha256).
 
 ## Usage
@@ -41,7 +42,7 @@ Put Your Solution JSON file in assets folder like `assets/solution.json` with th
 
 Also put all the `.c` source files in assets folder.
 
-Run the image, Check the generated `Reports.md` In your assets folder.
+Run the image, Check the generated `Reports.md` & `Report.json` In your assets folder.
 
 ## License
 
