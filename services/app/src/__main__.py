@@ -3,17 +3,17 @@
 import logging
 import sys
 
-from app.comp_source import SourceCompileError, comp_source
-from app.list_sources import list_sources
-from app.parse_solution import UnsupportedSolutionFormat, parse_solution
-from app.report import (
+from src.comp_source import SourceCompileError, comp_source
+from src.list_sources import list_sources
+from src.parse_solution import UnsupportedSolutionFormat, parse_solution
+from src.report import (
     ReportFormat,
     ReportItem,
     ReportWriter,
     ValidationStatus,
 )
-from app.run_bin import CalledProcessError, run_bin
-from app.solution_file.reader import read_solution
+from src.run_bin import CalledProcessError, run_bin
+from src.solution_file.reader import read_solution
 
 logger = logging.getLogger(__name__)
 

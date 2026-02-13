@@ -2,7 +2,7 @@ services:
   app:
     image: validate-assignments
     build:
-      context: .
+      context: services/app
       dockerfile: Dockerfile
     container_name: validate-assignments
     environment:
@@ -13,4 +13,3 @@ services:
     volumes:
       - ./assets:/assets
     network_mode: none
-

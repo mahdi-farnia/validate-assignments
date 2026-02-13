@@ -5,7 +5,7 @@ from typing import Generator
 
 from aiofiles import os as aioos
 
-from app.config import settings
+from src.config import settings
 
 
 async def list_sources() -> Generator[Path, None]:

@@ -4,6 +4,8 @@ from pathlib import Path
 
 import pytest
 
+from src.comp_source import SourceCompileError, comp_source
+
 
 @dataclass
 class CompileState:
@@ -16,8 +18,6 @@ def test_compsource_valid(mocker):
     mocker.patch("tempfile.gettempdir", return_value="/tmp")
     mocker.patch("subprocess.run", return_value=CompileState(returncode=0))
 
-    from app.comp_source import comp_source
-
     outfile = comp_source(input)
     assert outfile == output
 
@@ -28,8 +28,6 @@ def test_compsource_invalid(mocker):
     mocker.patch("tempfile.gettempdir", return_value="/tmp")
 
     mocker.patch("subprocess.run", return_value=CompileState(returncode=1))
-
-    from app.comp_source import SourceCompileError, comp_source
 
     with pytest.raises(
         expected_exception=SourceCompileError,

@@ -1,6 +1,6 @@
 import pytest
 
-from app.list_sources import list_sources
+from src.list_sources import list_sources
 
 
 class DirEntryMock:

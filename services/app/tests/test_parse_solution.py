@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from app.parse_solution import UnsupportedSolutionFormat, parse_solution
+from src.parse_solution import UnsupportedSolutionFormat, parse_solution
 
 valid_cases: list[tuple[str, dict]] = [
     ("Simple", {"input": ["in"], "output": ["out"]}),

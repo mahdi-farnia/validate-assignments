@@ -2,7 +2,7 @@ from subprocess import run as run_subprocess, CalledProcessError
 from datetime import timedelta
 from pathlib import Path
 
-from app.config import settings
+from src.config import settings
 
 
 def run_bin(

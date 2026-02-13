@@ -3,7 +3,7 @@
 import subprocess
 from pathlib import Path
 
-from app.config import settings
+from src.config import settings
 
 
 def comp_source(src_path: Path) -> Path:

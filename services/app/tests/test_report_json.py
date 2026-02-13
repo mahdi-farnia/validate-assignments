@@ -1,6 +1,6 @@
 import pytest
 import json
-from app.report.report_json import ReportItem, ValidationStatus, JSONReport
+from src.report.report_json import ReportItem, ValidationStatus, JSONReport
 
 valid_cases: list[tuple[str, list[ReportItem], dict]] = [
     (

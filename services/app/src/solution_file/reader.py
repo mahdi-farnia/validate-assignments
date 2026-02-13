@@ -4,7 +4,7 @@ from pathlib import Path
 
 from aiofiles import open as aioopen
 
-from app.config import settings
+from src.config import settings
 
 
 @asynccontextmanager

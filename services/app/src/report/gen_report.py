@@ -4,7 +4,7 @@ from pathlib import Path
 
 from aiofiles import open as aioopen
 
-from app.config import settings
+from src.config import settings
 import asyncio
 from .report_json import JSONReport
 from .report_md import MDReport
