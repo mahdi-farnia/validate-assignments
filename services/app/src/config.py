@@ -9,7 +9,7 @@ _ASSETS_DIR = getenv("ASSETS")
 _APP_NAME = getenv("APP_NAME")
 _SOLUTION_JSON = getenv("SOLUTION_JSON")
 _RUN_TIMEOUT_SEC = getenv("RUN_TIMEOUT_SEC", "5")
-_STORAGE_TYPE = getenv("STORAGE_TYPE")
+_STORAGE_TYPE = getenv("STORAGE_TYPE", "").upper()
 _S3_ENDPOINT = getenv("S3_ENDPOINT_URL")
 _S3_ACCESS_KEY = getenv("S3_ACCESS_KEY")
 _S3_SECRET_KEY = getenv("S3_SECRET_KEY")
@@ -56,30 +56,30 @@ class Settings:
                 return v
             case _:
                 raise AssertionError(
-                    f"STORAGE_TYPE must be either {StorageType.DISK} or {StorageType.S3}"
+                    f"STORAGE_TYPE must be either {StorageType.DISK} or {StorageType.S3}, got {_STORAGE_TYPE}"
                 )
 
     @cached_property
     def s3_endpoint_url(self) -> str:
-        if _STORAGE_TYPE == StorageType.S3 and _S3_ENDPOINT is None:
+        if _STORAGE_TYPE != StorageType.S3 or _S3_ENDPOINT is None:
             raise AttributeError(
                 "S3_ENDPOINT_URL must be set when source storage set to s3"
             )
-        return _STORAGE_TYPE or ""
+        return _S3_ENDPOINT or ""
 
     @cached_property
     def s3_access_key(self) -> str:
-        if _STORAGE_TYPE == StorageType.S3 and _S3_ACCESS_KEY is not None:
+        if _STORAGE_TYPE != StorageType.S3 or _S3_ACCESS_KEY is None:
             raise AttributeError(
-                "S3_ACCESS_KEY must be set when source storage set to s3"
+                f"S3_ACCESS_KEY must be set when source storage set to s3, got {_S3_ACCESS_KEY} for {_STORAGE_TYPE}"
             )
         return _S3_ACCESS_KEY or ""
 
     @cached_property
     def s3_secret_key(self) -> str:
-        if _STORAGE_TYPE == StorageType.S3 and _S3_SECRET_KEY is not None:
+        if _STORAGE_TYPE != StorageType.S3 or _S3_SECRET_KEY is None:
             raise AttributeError(
-                "S3_SECRET_KEY must be set when source storage set to s3"
+                f"S3_SECRET_KEY must be set when source storage set to s3, got {_S3_SECRET_KEY} for {_STORAGE_TYPE}"
             )
         return _S3_SECRET_KEY or ""
 

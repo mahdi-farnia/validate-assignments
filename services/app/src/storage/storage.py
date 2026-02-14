@@ -7,7 +7,7 @@ from .solution import SolutionModel
 
 class Storage(metaclass=ABCMeta):
     @abstractmethod
-    async def list_sources(self) -> AsyncGenerator[Resource, None]:
+    def list_sources(self) -> AsyncGenerator[Resource, None]:
         """
         Finding available source files in this storage
 

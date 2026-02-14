@@ -12,7 +12,7 @@ from .storage import DestinationNotFound, Storage
 
 class DiskStorage(Storage):
     @override
-    async def list_sources(  # pyright: ignore[reportIncompatibleMethodOverride]
+    async def list_sources(
         self,
     ) -> AsyncGenerator[Resource, None]:
         if not await aioos.path.isdir(settings.assets_dir):

@@ -38,7 +38,7 @@ async def main(report_formats: list[ReportFormat]):
     report_record: list[ReportItem] = []
 
     idx = 0
-    async for source in await storage.list_sources():
+    async for source in storage.list_sources():
         idx += 1
         # Student Id must be set as source code name => <student_id>.c
         student_id = source.filename
