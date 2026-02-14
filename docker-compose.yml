@@ -2,15 +2,50 @@ services:
   app:
     image: validate-assignments
     build:
-      context: .
+      context: services/app
       dockerfile: Dockerfile
     container_name: validate-assignments
     environment:
-      - ASSETS_DIR=${ASSETS_DIR:-/assets}
+      - ASSETS=$ASSETS # Points to assets directory when storage type set to disk or bucket path when set to s3
       - APP_NAME=${APP_NAME:-validate-assignments}
-      - SOLUTION_JSON=${SOLUTION_JSON:-/assets/solution.json}
+      - SOLUTION_JSON=${SOLUTION_JSON:-$ASSETS/solution.json}
       - RUN_TIMEOUT_SEC=${RUN_TIMEOUT_SEC:-5}
+      - STORAGE_TYPE=${STORAGE_TYPE:-disk} # or s3
+      - S3_ENDPOINT_URL=${S3_ENDPOINT_URL:-http://minio:9000}
+      - S3_ACCESS_KEY=${S3_ACCESS_KEY:-minioadmin}
+      - S3_SECRET_KEY=${S3_SECRET_KEY:-minioadmin}
+      - DEBUG=0
     volumes:
       - ./assets:/assets
-    network_mode: none
+    networks:
+      - app
+    depends_on:
+      minio:
+        condition: service_healthy
+  minio:
+    image: minio/minio
+    environment:
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    command: [ "server", "/data", "--console-address", ":9001" ]
+    volumes:
+      - minio_data:/data
+    networks:
+      - app
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
+      interval: 5s
+      timeout: 20s
+      retries: 3
 
+volumes:
+  minio_data:
+
+
+networks:
+  app:
+    driver: bridge
+    # internal: true

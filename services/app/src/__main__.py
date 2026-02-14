@@ -3,47 +3,56 @@
 import logging
 import sys
 
-from app.comp_source import SourceCompileError, comp_source
-from app.list_sources import list_sources
-from app.parse_solution import UnsupportedSolutionFormat, parse_solution
-from app.report import (
-    ReportFormat,
-    ReportItem,
-    ReportWriter,
-    ValidationStatus,
+from src.config import StorageType, settings
+from src.report import ReportFormat, ReportItem, ReportWriter, ValidationStatus
+from src.storage import (
+    CompilationError,
+    DiskStorage,
+    RunError,
+    S3Storage,
+    Storage,
+    UnsupportedSolutionFormat,
 )
-from app.run_bin import CalledProcessError, run_bin
-from app.solution_file.reader import read_solution
 
 logger = logging.getLogger(__name__)
 
 
+def create_storage(t: str) -> Storage:
+    match t:
+        case StorageType.DISK:
+            return DiskStorage()
+        case StorageType.S3:
+            return S3Storage()
+        case _:
+            raise ValueError("Unknown storage type")
+
+
 async def main(report_formats: list[ReportFormat]):
-    async with read_solution() as solution_src:
-        try:
-            solution = await parse_solution(solution_src)
-        except UnsupportedSolutionFormat:
-            logger.error("Invalid solution.json format!")
-            sys.exit(1)
+    storage = create_storage(settings.storage_type)
+    try:
+        solution = await storage.read_solution()
+    except UnsupportedSolutionFormat:
+        logger.error("Invalid solution.json format!")
+        sys.exit(1)
 
     report_record: list[ReportItem] = []
 
-    for idx, source_code in enumerate(await list_sources()):
+    idx = 0
+    async for source in storage.list_sources():
+        idx += 1
         # Student Id must be set as source code name => <student_id>.c
-        student_id: str = source_code.stem
+        student_id = source.filename
+
         try:
             logger.info(f"[{idx:2}]  Compiling => {student_id}")
-            compiled_bin = comp_source(source_code)
-        except SourceCompileError:
+            await source.prepare_resource()
+        except CompilationError:
             logger.warning(f"[{idx:2}]  Compilation Failed => {student_id}")
             report_record.append((student_id, ValidationStatus.COMPILATION_FAILED))
             continue
 
-        logger.info(f"[{idx:2}]  Compiled Successfully, Attempting To Run")
         try:
-            if (
-                output_result := run_bin(compiled_bin, solution.input)
-            ) == solution.output:
+            if (output_result := await source.run(solution.input)) == solution.output:
                 logger.info(f"[{idx:2}]  Successfully Ran => {student_id}")
                 report_record.append((student_id, ValidationStatus.SUCCEEDED))
             else:
@@ -52,13 +61,15 @@ async def main(report_formats: list[ReportFormat]):
                 )
                 logger.warning(f"[{idx:2}]  Invalid Output => {student_id}")
                 report_record.append((student_id, ValidationStatus.INVALID_OUTPUT))
-        except CalledProcessError:
+        except RunError:
             logger.warning(f"[{idx:2}]  Failed To Run => {student_id}")
             report_record.append((student_id, ValidationStatus.RUN_FAILED))
 
+        logger.info(f"[{idx:2}]  Compiled Successfully, Attempting To Run")
+
     logger.info("Generating Report...")
 
-    await ReportWriter(report_formats, report_record).write_report()
+    await ReportWriter(report_formats, report_record).write_report(storage)
 
 
 if __name__ == "__main__":

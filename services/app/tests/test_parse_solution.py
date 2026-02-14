@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from app.parse_solution import UnsupportedSolutionFormat, parse_solution
+from src.storage.solution import SolutionModel, UnsupportedSolutionFormat
 
 valid_cases: list[tuple[str, dict]] = [
     ("Simple", {"input": ["in"], "output": ["out"]}),
@@ -15,7 +15,7 @@ valid_cases: list[tuple[str, dict]] = [
     "input", ids=(c[0] for c in valid_cases), argvalues=(c[1] for c in valid_cases)
 )
 async def test_parsesolution_valid(input: dict):
-    solution = await parse_solution(json.dumps(input))
+    solution = SolutionModel.model_validate_json(json.dumps(input))
     assert solution.input == input.get("input")
     assert solution.output == input.get("output")
 
@@ -34,4 +34,4 @@ invalid_cases: list[tuple[str, dict]] = [
 )
 async def test_parsesolution_invalid(input: dict):
     with pytest.raises(expected_exception=UnsupportedSolutionFormat):
-        await parse_solution(json.dumps(input))
+        SolutionModel.model_validate_json(json.dumps(input))
