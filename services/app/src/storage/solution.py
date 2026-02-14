@@ -8,8 +8,12 @@ class SolutionModel:
     output: list[str]
 
     @staticmethod
-    def model_validate(arg: dict) -> SolutionModel:
-        instance = SolutionModel(**arg)
+    def model_validate_json(src: str) -> SolutionModel:
+        obj = json.loads(src)
+        if not isinstance(obj, dict):
+            raise UnsupportedSolutionFormat()
+
+        instance = SolutionModel(**obj)
         if (
             list(instance.__dict__.keys()) == ["input", "output"]
             and isinstance(instance.input, list)
@@ -19,21 +23,6 @@ class SolutionModel:
         ):
             return instance
         raise UnsupportedSolutionFormat()
-
-
-async def parse_solution(src: str) -> SolutionModel:
-    """
-    Parse Solution And Returns According Model
-
-    :raise UnsupportedSolutionFormat:
-    :return: Serialized
-    :rtype: SolutionModel
-    """
-    value = json.loads(src)
-    if isinstance(value, dict):
-        return SolutionModel.model_validate(value)
-
-    raise UnsupportedSolutionFormat()
 
 
 class UnsupportedSolutionFormat(RuntimeError):

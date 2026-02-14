@@ -2,7 +2,7 @@ from contextlib import asynccontextmanager
 from typing import Iterator
 
 import pytest
-from src.storage.s3 import S3Storage, create_resource
+from src.storage.s3 import S3Storage
 
 
 class SessionMock:

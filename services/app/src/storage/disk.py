@@ -1,8 +1,10 @@
 from pathlib import Path
 from typing import AsyncGenerator, override
 
+from aiofiles import open as aioopen
 from aiofiles import os as aioos
 from src.config import settings
+from src.storage.solution import SolutionModel
 
 from .resource import Resource
 from .storage import DestinationNotFound, Storage
@@ -21,3 +23,8 @@ class DiskStorage(Storage):
                 ".c"
             ):  # currently we are only support c files
                 yield Resource(Path(entry.path))
+
+    @override
+    async def read_solution(self) -> SolutionModel:
+        async with aioopen(settings.solution_json, "r") as f:
+            return SolutionModel.model_validate_json(await f.read())

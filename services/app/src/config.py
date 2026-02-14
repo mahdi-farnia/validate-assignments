@@ -40,6 +40,8 @@ class Settings:
     @cached_property
     def solution_json(self) -> str:
         assert _SOLUTION_JSON, "SOLUTION_JSON env not defined!"
+        if _STORAGE_TYPE == StorageType.S3:
+            return _SOLUTION_JSON
         return Path(_SOLUTION_JSON).expanduser().as_posix()
 
     @cached_property
@@ -47,7 +49,7 @@ class Settings:
         return int(_RUN_TIMEOUT_SEC)
 
     @cached_property
-    def source_storage(self) -> StorageType:
+    def storage_type(self) -> StorageType:
         assert _STORAGE_TYPE, "STORAGE_TYPE is not defined"
         match _STORAGE_TYPE:
             case StorageType.DISK | StorageType.S3 as v:
@@ -92,7 +94,7 @@ class MockedSettings:
     run_timeout_sec: int = 5
     report_md: str = "Report.md"
     report_json: str = "Report.json"
-    source_storage: StorageType = StorageType.DISK
+    storage_type: StorageType = StorageType.DISK
     s3_endpoint_url: str = ""
     s3_access_key: str = ""
     s3_secret_key: str = ""

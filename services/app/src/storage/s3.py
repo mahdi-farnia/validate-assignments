@@ -1,8 +1,10 @@
+from pathlib import Path
 from typing import AsyncGenerator, override
 
 import aioboto3
 import aiofiles
 from src.config import settings
+from src.storage.solution import SolutionModel
 
 from .resource import Resource
 from .storage import DestinationNotFound, Storage
@@ -32,6 +34,15 @@ class S3Storage(Storage):
             async for obj in bucket.objects.filter():
                 if obj.key.endswith(".c"):
                     yield await create_resource(obj.key, await obj.get("Body").read())
+
+    @override
+    async def read_solution(self) -> SolutionModel:
+        async with self._session.resource("s3") as s3:
+            solution = Path(settings.solution_json)
+            s3_obj = await s3.get_object(
+                Bucket=solution.parent, Key=solution.stem + solution.suffix
+            )
+            return SolutionModel.model_validate_json(await s3_obj.get("Body").read())
 
 
 async def create_resource(key: str, content: bytes) -> Resource:

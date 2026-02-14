@@ -6,9 +6,9 @@ services:
       dockerfile: Dockerfile
     container_name: validate-assignments
     environment:
-      - ASSETS=${ASSETS:-} # Points to assets directory when storage type set to disk or bucket path when set to s3
+      - ASSETS=$ASSETS # Points to assets directory when storage type set to disk or bucket path when set to s3
       - APP_NAME=${APP_NAME:-validate-assignments}
-      - SOLUTION_JSON=${SOLUTION_JSON:-/assets/solution.json}
+      - SOLUTION_JSON=${SOLUTION_JSON:-$ASSETS/solution.json}
       - RUN_TIMEOUT_SEC=${RUN_TIMEOUT_SEC:-5}
       - STORAGE_TYPE=${STORAGE_TYPE:-disk} # or s3
       - S3_ENDPOINT_URL=${S3_ENDPOINT_URL:-http://minio:9000}

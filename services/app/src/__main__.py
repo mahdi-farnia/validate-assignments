@@ -3,11 +3,16 @@
 import logging
 import sys
 
-from src.config import settings, StorageType
-from src.parse_solution import UnsupportedSolutionFormat, parse_solution
+from src.config import StorageType, settings
 from src.report import ReportFormat, ReportItem, ReportWriter, ValidationStatus
-from src.solution_file.reader import read_solution
-from src.storage import CompilationError, DiskStorage, RunError, S3Storage, Storage
+from src.storage import (
+    CompilationError,
+    DiskStorage,
+    RunError,
+    S3Storage,
+    Storage,
+    UnsupportedSolutionFormat,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -23,17 +28,17 @@ def create_storage(t: str) -> Storage:
 
 
 async def main(report_formats: list[ReportFormat]):
-    async with read_solution() as solution_src:
-        try:
-            solution = await parse_solution(solution_src)
-        except UnsupportedSolutionFormat:
-            logger.error("Invalid solution.json format!")
-            sys.exit(1)
+    storage = create_storage(settings.storage_type)
+    try:
+        solution = await storage.read_solution()
+    except UnsupportedSolutionFormat:
+        logger.error("Invalid solution.json format!")
+        sys.exit(1)
 
     report_record: list[ReportItem] = []
 
     idx = 0
-    async for source in await create_storage(settings.source_storage).list_sources():
+    async for source in await storage.list_sources():
         idx += 1
         # Student Id must be set as source code name => <student_id>.c
         student_id = source.filename
