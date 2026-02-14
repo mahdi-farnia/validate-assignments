@@ -69,7 +69,7 @@ async def main(report_formats: list[ReportFormat]):
 
     logger.info("Generating Report...")
 
-    await ReportWriter(report_formats, report_record).write_report()
+    await ReportWriter(report_formats, report_record).write_report(storage)
 
 
 if __name__ == "__main__":

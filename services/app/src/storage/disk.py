@@ -28,3 +28,8 @@ class DiskStorage(Storage):
     async def read_solution(self) -> SolutionModel:
         async with aioopen(settings.solution_json, "r") as f:
             return SolutionModel.model_validate_json(await f.read())
+
+    @override
+    async def write_report(self, key: str, content: bytes):
+        async with aioopen(Path(settings.assets_dir) / key, "w") as f:
+            await f.write(content)  # type: ignore

@@ -1,14 +1,13 @@
 """Generate Markdown Report"""
 
-from pathlib import Path
-
-from aiofiles import open as aioopen
+import asyncio
 
 from src.config import settings
-import asyncio
+from src.storage import Storage
+
+from .report import ReportFormat, ReportItem
 from .report_json import JSONReport
 from .report_md import MDReport
-from .report import ReportFormat, ReportItem
 
 
 # TODO tidy report writers => open-closed
@@ -20,19 +19,21 @@ class ReportWriter:
         self._formats = formats
         self._report_record = report_record
 
-    async def write_report(self):
+    async def write_report(self, storage: Storage):
         async with asyncio.TaskGroup() as tg:
             if ReportFormat.JSON in self._formats:
-                tg.create_task(self._write_report_json())
+                tg.create_task(self._write_report_json(storage))
             if ReportFormat.MD in self._formats:
-                tg.create_task(self._write_report_md())
+                tg.create_task(self._write_report_md(storage))
 
-    async def _write_report_json(self):
+    async def _write_report_json(self, storage: Storage):
         reporter = JSONReport(self._report_record)
-        async with aioopen(Path(settings.assets_dir) / settings.report_json, "w") as f:
-            await f.write(reporter.gen_report())
+        await storage.write_report(
+            settings.report_json, bytes(reporter.gen_report(), encoding="utf-8")
+        )
 
-    async def _write_report_md(self):
+    async def _write_report_md(self, storage: Storage):
         reporter = MDReport(self._report_record)
-        async with aioopen(Path(settings.assets_dir) / settings.report_md, "w") as f:
-            await f.write(reporter.gen_report())
+        await storage.write_report(
+            settings.report_md, bytes(reporter.gen_report(), encoding="utf-8")
+        )
