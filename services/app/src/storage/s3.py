@@ -1,0 +1,41 @@
+from typing import AsyncGenerator, override
+
+import aioboto3
+import aiofiles
+from src.config import settings
+
+from .resource import Resource
+from .storage import DestinationNotFound, Storage
+
+
+class S3Storage(Storage):
+    _session: aioboto3.Session
+
+    def __init__(self):
+        self._session = aioboto3.Session()
+
+    @override
+    async def list_sources(  # pyright: ignore[reportIncompatibleMethodOverride]
+        self,
+    ) -> AsyncGenerator[Resource, None]:
+        async with self._session.resource(
+            "s3",
+            aws_access_key_id=settings.s3_access_key,
+            aws_secret_access_key=settings.s3_secret_key,
+            endpoint_url=settings.s3_endpoint_url,
+        ) as s3:
+            try:
+                bucket = await s3.Bucket(settings.assets_dir)
+            except:
+                raise DestinationNotFound(f"bucket '{settings.assets_dir}' not exists")
+
+            async for obj in bucket.objects.filter():
+                if obj.key.endswith(".c"):
+                    yield await create_resource(obj.key, await obj.get("Body").read())
+
+
+async def create_resource(key: str, content: bytes) -> Resource:
+    dest = settings.tmpdir / key
+    async with aiofiles.open(dest, "wb") as f:
+        await f.write(content)
+    return Resource(dest)

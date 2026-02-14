@@ -1,0 +1,23 @@
+from pathlib import Path
+from typing import AsyncGenerator, override
+
+from aiofiles import os as aioos
+from src.config import settings
+
+from .resource import Resource
+from .storage import DestinationNotFound, Storage
+
+
+class DiskStorage(Storage):
+    @override
+    async def list_sources(  # pyright: ignore[reportIncompatibleMethodOverride]
+        self,
+    ) -> AsyncGenerator[Resource, None]:
+        if not await aioos.path.isdir(settings.assets_dir):
+            raise DestinationNotFound(f"directory '{settings.assets_dir}' not found")
+
+        for entry in await aioos.scandir(settings.assets_dir):
+            if entry.is_file() and entry.name.lower().endswith(
+                ".c"
+            ):  # currently we are only support c files
+                yield Resource(Path(entry.path))
